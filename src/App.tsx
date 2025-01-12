@@ -1,80 +1,83 @@
-import './App.css';
-import './index.css';
-import { useState, FormEvent } from 'react';
+import React, { useState, useEffect } from 'react';
+import { gsap } from 'gsap';
+import './App.css'; // Import the custom CSS file
 
-function App() {
-  // state
-  const [weight, setWeight] = useState<number>(0);
-  const [height, setHeight] = useState<number>(0);
-  const [bmi, setBmi] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
+const App = () => {
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+  const [bmi, setBmi] = useState(0);
 
-  const calcBmi = (e: FormEvent<HTMLFormElement>) => {
-    // Prevent submitting to the server
-    e.preventDefault();
+  const calcBmi = () => {
+    const parsedWeight = parseFloat(weight);
+    const parsedHeight = parseFloat(height);
 
-    if (weight === 0 || height === 0) {
-      alert('Please enter a valid weight and height');
+    if (parsedWeight > 30 && parsedHeight > 120) {
+      const heightInMeters = parsedHeight / 100;
+      setBmi(parsedWeight / heightInMeters ** 2);
     } else {
-      const bmiValue = (weight / (height * height)) * 703;
-      setBmi(bmiValue.toFixed(1));
-
-      // Logic for message
-      if (bmiValue < 25) {
-        setMessage('You are underweight');
-      } else if (bmiValue >= 25 && bmiValue < 30) {
-        setMessage('You are a healthy weight');
-      } else {
-        setMessage('You are overweight');
-      }
+      setBmi(0);
     }
   };
 
-  const reload = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    window.location.reload();
-  };
+  useEffect(() => {
+    gsap.fromTo(
+      '.title',
+      { opacity: 0, y: -50 },
+      { opacity: 1, y: 0, duration: 1, ease: 'bounce.out' }
+    );
+    gsap.fromTo(
+      '.input-container',
+      { opacity: 0, y: 50 },
+      { opacity: 1, y: 0, duration: 1, ease: 'power3.out', delay: 0.5 }
+    );
+    gsap.fromTo(
+      '.button',
+      { opacity: 0, scale: 0.8 },
+      {
+        opacity: 1,
+        scale: 1,
+        duration: 0.8,
+        ease: 'elastic.out(1, 0.3)',
+        delay: 1,
+      }
+    );
+  }, []);
 
   return (
-    <div className='app'>
-      <div className='container'>
-        <h2 className='center'>BMI Calculator</h2>
-        <form onSubmit={calcBmi}>
-          <div>
-            <label>Weight (lbs)</label>
-            <input
-              type='number'
-              value={weight}
-              onChange={(e) => setWeight(parseInt(e.target.value) || 0)}
-            />
-          </div>
+    <div className='container'>
+      <h1 className='title'>BMI Calculator</h1>
 
-          <div>
-            <label>Height (in)</label>
-            <input
-              type='number'
-              value={height}
-              onChange={(e) => setHeight(parseInt(e.target.value) || 0)}
-            />
-          </div>
+      <div className='input-container'>
+        <input
+          type='text'
+          placeholder='Enter Weight (Kg)'
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+          className='input'
+        />
+        <input
+          type='text'
+          placeholder='Enter Height (cm)'
+          value={height}
+          onChange={(e) => setHeight(e.target.value)}
+          className='input'
+        />
+        <button onClick={calcBmi} className='button'>
+          Calculate
+        </button>
+        <p className='result'>
+          Your BMI is{' '}
+          <span className='bmi-value'>
+            {bmi > 0 ? bmi.toFixed(2) : 'Invalid input'}
+          </span>
+        </p>
+      </div>
 
-          <div>
-            <button className='btn' type='submit'>
-              Submit
-            </button>
-            <button className='btn btn-outline' onClick={reload} type='button'>
-              Reload
-            </button>
-          </div>
-        </form>
-
-        <div className='center'>
-          <h3>Your BMI is: {bmi}</h3>
-          <p>{message}</p>
-        </div>
+      <div className='footer'>
+        <p className='footer-text'>Stay Healthy!</p>
       </div>
     </div>
   );
-}
+};
 
 export default App;
